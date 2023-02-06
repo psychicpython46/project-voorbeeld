@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<style>
+    body {
+        padding: 40px;
+        margin: 0;
+    }
+    #list {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+    .festival {
+        border: 1px solid #767676;
+        margin: 5px;
+        padding: 5px;
+    }
+    .festival * {
+        margin: 1px;
+        padding: 1px;
+    }
+    .green {
+        color: rgb(22, 150, 22);
+    }
+</style>
+
+<body>
+    <div>
+        <p id="type">Welkom, </p> <button onclick="logout()">Log uit</button>
+        <ul id="list">
+
+        </ul>
+    </div>
+</body>
+</html>
+
+<script>
+    getRole();
+
+    var role = "G";
+
+    async function getRole() {
+        let result = await fetch("http://localhost/project/project%202/daywind/api/checkKey.php?key=" + localStorage.getItem('api-key'));
+        data = await result.json();
+
+        role = data['role'];
+        get();
+    }
+
+    async function get() {
+        document.getElementById('type').innerHTML = "Welkom, " + localStorage.getItem('username') + " --- " + localStorage.getItem("api-key");
+
+        let result = await fetch("http://localhost/project/project%202/daywind/api/read_festivals.php?approved=false");
+        data = await result.json();
+        
+        let html = "";
+        data['data'].forEach(element => {
+            html += "<div class='festival'><h2>" + element.Naam + "</h2><p>" + element.Plaats + "</p><p>Start: " + element.DatumStart + "</p><p>Eind: " + element.DatumEind + "</p><p>€" + element.KostenTickets + " per ticket</p><p>Tickets verkocht: " + element.Tickets + "</p>";
+            if (localStorage.getItem("type") != "Bezoeker") {
+                if(element.Approved == 0) {
+                    html += "<h4>Nog niet goedgekeurd</h4>";
+                    if(role == "O") {
+                        html += "<button onclick='approve(" + element.ID + ")'>Keur Goed</button>";
+                    }
+                } else {
+                    html +="<h4 class='green'>Goedgekeurd</h4>";
+                }
+            }
+
+            html += "</div>";
+        });
+        document.getElementById('list').innerHTML = html;
+    }
+
+    async function approve(id) {
+        if(role == "O") {
+            let result = await fetch("http://localhost/project/project%202/daywind/api/approve_festival.php?api-key=" + localStorage.getItem("api-key") + "&id=" + id);
+            // let result = await fetch("http://localhost/project%20sd/2/api/approve_festival.php?id=" + id);
+            let data = await result.json();
+            if(data['success']) {
+                get();
+            } else {
+                alert("Error: " + data['error'] + "\nInfo: " + JSON.stringify(data['info'], null, 5));
+            }
+        } else {
+            alert("Geen toestemming");
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem("type");
+        window.location = "index.html";
+    }
+</script>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    body {
+        width: 100vw;
+        height: 100vh;
+        padding: 0;
+        margin: 0;
+    }
+
+    form, #container, body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    form input {
+        margin-bottom: 5px;
+        padding: 7px;
+        background-color: lightcyan;
+    }
+
+    button {
+        background-color: lightcyan;
+    }
+
+    #container {
+        background-color: lightgray;
+        border-radius: 10px;
+        padding: 30px 20px 0px 20px;
+    }
+</style>
+<body>
+    <div id="container">
+        <form>
+            <input type="text" placeholder="username" id="enter-username">
+            <input type="text" placeholder="password" id="enter-password">
+        </form>
+        <button onclick="login()">Log in</button>
+        <p id="key"></p>
+    </div>
+</body>
+</html>
+
+<script>
+    async function login(){
+        let username = document.getElementById('enter-username').value;
+        let password = document.getElementById('enter-password').value;
+
+        let formData = new FormData();
+        formData.append("username", username);
+        formData.append("password", password);
+
+        let response = await fetch('http://localhost/project/project%202/daywind/api/login.php', {method: 'post', body: formData});
+        let data = await response.json();
+
+        if(data['success']) {
+            localStorage.setItem('api-key', data['apikey']);
+            localStorage.setItem('username', username);
+            window.location = "management.html";
+        }
+    }
+</script>
